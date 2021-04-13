@@ -6,3 +6,4 @@ CONNECTION_STRING = "mongodb+srv://admin:admPass@constructionappcluster.qfh8l.mo
 client = pymongo.MongoClient(CONNECTION_STRING)
 db = client.get_database('constructionDB')
 user_collection = pymongo.collection.Collection(db, 'users')
+equipment_collection = pymongo.collection.Collection(db, 'equipments')
