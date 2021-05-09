@@ -30,7 +30,7 @@ def insertPermission():
         'gastosConsumiveis': request_data['gastosConsumiveis'],
         'recursosHumanos': request_data['recursosHumanos'],
         }
-        db.db.permission_collection.insert(new_store)
+        db.db.permission.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
     except Exception as e:
         output = {"error": str(e)}
@@ -39,7 +39,7 @@ def insertPermission():
 @bp_permission.route('/<_id>', methods=['GET'])
 def getPermission(_id):
     try:
-        permission = list(db.db.permission_collection.find({"_id": int(_id)}))
+        permission = list(db.db.permission.find({"_id": int(_id)}))
         return send({"result": permission}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -48,7 +48,7 @@ def getPermission(_id):
 @bp_permission.route('/<_id>', methods=['DELETE'])
 def deletePermission(_id):
     try:
-        cursor = db.db.permission_collection.find_one_and_delete({"_id": int(_id)})
+        cursor = db.db.permission.find_one_and_delete({"_id": int(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}
@@ -56,7 +56,7 @@ def deletePermission(_id):
 
 @bp_permission.route("/all", methods=['GET'])
 def getAllUPermissions():
-    cursor = db.db.permission_collection.find({})
+    cursor = db.db.permission.find({})
     return dumps(list(cursor))
 
 @bp_permission.route('/<_id>', methods=['PUT'])
@@ -81,7 +81,7 @@ def updatePermission():
         }
         query = { "_id": int(request_data['_id']) }
         newvalues = { "$set": update_store }
-        db.db.permission_collection.update_one(query, newvalues)
+        db.db.permission.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}

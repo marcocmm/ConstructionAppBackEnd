@@ -22,7 +22,7 @@ def insertEquipment():
         'valor': request_data['valor'],
         'notaFiscalURL': request_data['notaFiscalURL']
         }
-        db.db.equipment_collection.insert(new_store)
+        db.db.equipment.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
     except Exception as e:
         output = {"error": str(e)}
@@ -30,7 +30,7 @@ def insertEquipment():
 
 @bp_equipment.route("/all", methods=['GET'])
 def getAllEquipments():
-    cursor = db.db.equipment_collection.find({})
+    cursor = db.db.equipment.find({})
     return dumps(list(cursor))
 
 @bp_equipment.route('/<_id>', methods=['PUT'])
@@ -47,7 +47,7 @@ def updateEquipment():
         }
         query = { "_id": int(request_data['_id']) }
         newvalues = { "$set": update_store }
-        db.db.equipment_collection.update_one(query, newvalues)
+        db.db.equipment.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -57,8 +57,8 @@ def updateEquipment():
 @bp_equipment.route('/<_id>', methods=['GET'])
 def getEquipment(_id):
     try:
-        lista_users = list(db.db.equipment_collection.find({"_id": int(_id)}))
-        return send({"result": lista_users}, HTTP_SUCCESS_GET_OR_UPDATE)
+        equipment = list(db.db.equipment.find({"_id": int(_id)}))
+        return send({"result": equipment}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
@@ -66,7 +66,7 @@ def getEquipment(_id):
 @bp_equipment.route('/<_id>', methods=['DELETE'])
 def deleteEquipment(_id):
     try:
-        cursor = db.db.equipment_collection.find_one_and_delete({"_id": int(_id)})
+        cursor = db.db.equipment.find_one_and_delete({"_id": int(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

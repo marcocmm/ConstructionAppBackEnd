@@ -18,7 +18,7 @@ def insertUserType():
         'nome': request_data['nome'],
         'permissao_id': request_data['permissao_id'],
         }
-        db.db.user_type_collection.insert(new_store)
+        db.db.users_type.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
     except Exception as e:
         output = {"error": str(e)}
@@ -27,7 +27,7 @@ def insertUserType():
 @bp_user_type.route('/<_id>', methods=['GET'])
 def getUserType(_id):
     try:
-        user_type = list(db.db.user_type_collection.find({"_id": int(_id)}))
+        user_type = list(db.db.users_type.find({"_id": int(_id)}))
         return send({"result": user_type}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -37,7 +37,7 @@ def getUserType(_id):
 @bp_user_type.route('/<_id>', methods=['DELETE'])
 def deleteUserType(_id):
     try:
-        cursor = db.db.user_type_collection.find_one_and_delete({"_id": int(_id)})
+        cursor = db.db.users_type.find_one_and_delete({"_id": int(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}
@@ -45,7 +45,7 @@ def deleteUserType(_id):
 
 @bp_user_type.route("/all", methods=['GET'])
 def getAllUsersType():
-    cursor = db.db.user_type_collection.find({})
+    cursor = db.db.users_type.find({})
     return dumps(list(cursor))
 
 
@@ -59,7 +59,7 @@ def updateUserType():
         }
         query = { "_id": int(request_data['_id']) }
         newvalues = { "$set": update_store }
-        db.db.user_type_collection.update_one(query, newvalues)
+        db.db.users_type.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
