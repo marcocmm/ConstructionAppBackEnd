@@ -1,8 +1,5 @@
-from flask import Flask, jsonify, request, make_response
-from pymongo import MongoClient
-from bson.json_util import dumps
+from flask import Blueprint, current_app, session, request
 import db
-app = Flask(__name__)
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
 HTTP_SUCCESS_CREATED       = 201
@@ -11,20 +8,19 @@ HTTP_SERVER_ERROR          = 500
 HTTP_NOT_FOUND             = 404
 HTTP_BAD_REQUEST           = 400
 
-@app.route('/')
-def flask_mongodb_atlas():
-    return "Hello! ConstructAPP!"
+bp_equipment = Blueprint('equipment', __name__, url_prefix='/equipment')
 
-# Equipamentos
-@app.route('/equipment', methods=['POST']) 
+@bp_equipment.route('/equipment', methods=['POST']) 
 def insertEquipment():
     try:
         request_data = request.get_json() 
         new_store = {
-        '_id': request_data['_id'],
-        'valor': request_data['valor'],
         'nome': request_data['nome'],
-        'descricao': request_data['descricao'],
+        'tipo': request_data['tipo'],
+        'fornecedor_id': request_data['fornecedor_id'],
+        'dataCompra': request_data['dataCompra'],
+        'valor': request_data['valor'],
+        'notaFiscalURL': request_data['notaFiscalURL']
         }
         db.db.equipment_collection.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
@@ -32,21 +28,22 @@ def insertEquipment():
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-
-@app.route("/allequipment")
+@bp_equipment.route("/all", methods=['GET'])
 def getAllEquipments():
     cursor = db.db.equipment_collection.find({})
     return dumps(list(cursor))
 
-@app.route('/equipment', methods=['PUT'])
+@bp_equipment.route('/<_id>', methods=['PUT'])
 def updateEquipment():
     try:
         request_data = request.get_json() 
         update_store = {
-        '_id': request_data['_id'],
-        'valor': request_data['valor'],
         'nome': request_data['nome'],
-        'descricao': request_data['descricao'],
+        'tipo': request_data['tipo'],
+        'fornecedor_id': request_data['fornecedor_id'],
+        'dataCompra': request_data['dataCompra'],
+        'valor': request_data['valor'],
+        'notaFiscalURL': request_data['notaFiscalURL']
         }
         query = { "_id": int(request_data['_id']) }
         newvalues = { "$set": update_store }
@@ -57,7 +54,7 @@ def updateEquipment():
         return send(output, HTTP_BAD_REQUEST)
 
 
-@app.route('/equipment/<_id>', methods=['GET'])
+@bp_equipment.route('/<_id>', methods=['GET'])
 def getEquipment(_id):
     try:
         lista_users = list(db.db.equipment_collection.find({"_id": int(_id)}))
@@ -66,7 +63,7 @@ def getEquipment(_id):
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-@app.route('/equipment/<_id>', methods=['DELETE'])
+@bp_equipment.route('/<_id>', methods=['DELETE'])
 def deleteEquipment(_id):
     try:
         cursor = db.db.equipment_collection.find_one_and_delete({"_id": int(_id)})
@@ -74,28 +71,3 @@ def deleteEquipment(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
-
-
-#Error Handler 404
-@app.errorhandler(404)
-def not_found_error(error):
-    return send({'error': 'Not found error'}, HTTP_SERVER_ERROR)
-
-#Error Handler 500
-@app.errorhandler(500)
-def internal_server_error(error):
-    return send({'error': 'Internal server error'}, HTTP_SERVER_ERROR)
-
-#Exception
-@app.errorhandler(Exception)
-def unhandled_exception(error):
-    try:
-        return send({'error': str(error)}, HTTP_SERVER_ERROR)
-    except:
-        return send({'error': "Unknown error"}, HTTP_SERVER_ERROR)
-
-def send(data, status_code):
-    return make_response(dumps(data), status_code)
-
-if __name__ == '__main__':
-    app.run(port=8000)
