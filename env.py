@@ -1,0 +1,8 @@
+import os
+HOST = '0.0.0.0'
+PORT = 5000
+DEBUG = True
+SECRET_KEY = '7c401a1e5fd54c6cd8cd0d5016c2911157a6127815ab7686'
+JWT_SECRET_KEY = 'Dude!WhyShouldYouEncryptIt'
+JWT_BLACKLIST_ENABLED = True
+JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
