@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from bson.json_util import dumps
+from controllers.login import tokenReq
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -11,11 +13,13 @@ HTTP_BAD_REQUEST           = 400
 bp_attendance = Blueprint('attendance', __name__, url_prefix='/attendance')
 
 @bp_attendance.route("/all", methods=['GET'])
+@tokenReq
 def getAllAttendance():
     cursor = db.db.attendance.find({})
     return dumps(list(cursor))
 
 @bp_attendance.route('/<_id>', methods=['GET'])
+@tokenReq
 def getAttendance(_id):
     try:
         attendance = list(db.db.attendance.find({"_id": int(_id)}))
@@ -25,7 +29,8 @@ def getAttendance(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_attendance.route('/attendance', methods=['POST']) 
+@bp_attendance.route('/attendance', methods=['POST'])
+@tokenReq 
 def insertAttendance():
     try:
         request_data = request.get_json() 
@@ -44,6 +49,7 @@ def insertAttendance():
 
 
 @bp_attendance.route('/<_id>', methods=['PUT'])
+@tokenReq
 def updateAttendance():
     try:
         request_data = request.get_json() 
@@ -63,6 +69,7 @@ def updateAttendance():
 
 
 @bp_attendance.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deleteAttendance(_id):
     try:
         cursor = db.db.attendance.find_one_and_delete({"_id": int(_id)})
@@ -70,3 +77,6 @@ def deleteAttendance(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)

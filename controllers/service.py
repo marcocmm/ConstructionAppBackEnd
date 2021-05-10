@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from controllers.login import tokenReq
+from bson.json_util import dumps
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -12,11 +14,13 @@ bp_service = Blueprint('service', __name__, url_prefix='/service')
 
 
 @bp_service.route("/all", methods=['GET'])
+@tokenReq
 def getAllServices():
     cursor = db.db.service.find({})
     return dumps(list(cursor))
 
 @bp_service.route('/<_id>', methods=['GET'])
+@tokenReq
 def getService(_id):
     try:
         service = list(db.db.service.find({"_id": int(_id)}))
@@ -26,7 +30,8 @@ def getService(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_service.route('/service', methods=['POST']) 
+@bp_service.route('/service', methods=['POST'])
+@tokenReq
 def insertService():
     try:
         request_data = request.get_json() 
@@ -47,6 +52,7 @@ def insertService():
 
 
 @bp_service.route('/<_id>', methods=['PUT'])
+@tokenReq
 def updateService():
     try:
         request_data = request.get_json() 
@@ -68,6 +74,7 @@ def updateService():
 
 
 @bp_service.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deleteService(_id):
     try:
         cursor = db.db.service.find_one_and_delete({"_id": int(_id)})
@@ -75,3 +82,6 @@ def deleteService(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)

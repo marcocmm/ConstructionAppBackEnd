@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from controllers.login import tokenReq
+from bson.json_util import dumps
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -11,11 +13,13 @@ HTTP_BAD_REQUEST           = 400
 bp_construction = Blueprint('construction', __name__, url_prefix='/construction')
 
 @bp_construction.route("/all", methods=['GET'])
+@tokenReq
 def getAllConstruction():
     cursor = db.db.construction.find({})
     return dumps(list(cursor))
 
 @bp_construction.route('/<_id>', methods=['GET'])
+@tokenReq
 def getConstruction(_id):
     try:
         construction = list(db.db.construction.find({"_id": int(_id)}))
@@ -25,7 +29,8 @@ def getConstruction(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_construction.route('/construction', methods=['POST']) 
+@bp_construction.route('/construction', methods=['POST'])
+@tokenReq 
 def insertConstruction():
     try:
         request_data = request.get_json() 
@@ -48,6 +53,7 @@ def insertConstruction():
 
 
 @bp_construction.route('/<_id>', methods=['PUT'])
+@tokenReq
 def updateConstruction():
     try:
         request_data = request.get_json() 
@@ -71,6 +77,7 @@ def updateConstruction():
 
 
 @bp_construction.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deleteConstruction(_id):
     try:
         cursor = db.db.construction.find_one_and_delete({"_id": int(_id)})
@@ -78,3 +85,6 @@ def deleteConstruction(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)
