@@ -8,35 +8,34 @@ HTTP_SERVER_ERROR          = 500
 HTTP_NOT_FOUND             = 404
 HTTP_BAD_REQUEST           = 400
 
-bp_user = Blueprint('user', __name__, url_prefix='/user')
+bp_attendance = Blueprint('attendance', __name__, url_prefix='/attendance')
 
-@bp_user.route("/all", methods=['GET'])
-def getAllUsers():
-    cursor = db.db.user.find({})
+@bp_attendance.route("/all", methods=['GET'])
+def getAllAttendance():
+    cursor = db.db.attendance.find({})
     return dumps(list(cursor))
 
-@bp_user.route('/<_id>', methods=['GET'])
-def getUser(_id):
+@bp_attendance.route('/<_id>', methods=['GET'])
+def getAttendance(_id):
     try:
-        lista_users = list(db.db.user.find({"_id": int(_id)}))
-        return send({"result": lista_users}, HTTP_SUCCESS_GET_OR_UPDATE)
+        attendance = list(db.db.attendance.find({"_id": int(_id)}))
+        return send({"result": attendance}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_user.route('/user', methods=['POST']) 
-def insertUser():
+@bp_attendance.route('/attendance', methods=['POST']) 
+def insertAttendance():
     try:
         request_data = request.get_json() 
         new_store = {
-        'nome': request_data['nome'],
-        'senha': request_data['senha'],
-        'telefone': request_data['telefone'],
-        'tipo_usuario_id': request_data['tipo_usuario_id'],
-        'nif': request_data['nif'],
+        'usuario_id': request_data['usuario_id'],
+        'obra_id': request_data['obra_id'],
+        'dataEntrada': request_data['dataEntrada'],
+        'dataSaida': request_data['dataSaida']
         }
-        db.db.user.insert(new_store)
+        db.db.attendance.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
     except Exception as e:
         output = {"error": str(e)}
@@ -44,30 +43,29 @@ def insertUser():
 
 
 
-@bp_user.route('/<_id>', methods=['PUT'])
-def updateUser():
+@bp_attendance.route('/<_id>', methods=['PUT'])
+def updateAttendance():
     try:
         request_data = request.get_json() 
         update_store = {
-        'nome': request_data['nome'],
-        'senha': request_data['senha'],
-        'telefone': request_data['telefone'],
-        'tipo_usuario_id': request_data['tipo_usuario_id'],
-        'nif': request_data['nif'],
+        'usuario_id': request_data['usuario_id'],
+        'obra_id': request_data['obra_id'],
+        'dataEntrada': request_data['dataEntrada'],
+        'dataSaida': request_data['dataSaida']
         }
         query = { "_id": int(request_data['_id']) }
         newvalues = { "$set": update_store }
-        db.db.user.update_one(query, newvalues)
+        db.db.attendance.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_user.route('/<_id>', methods=['DELETE'])
-def deleteUser(_id):
+@bp_attendance.route('/<_id>', methods=['DELETE'])
+def deleteAttendance(_id):
     try:
-        cursor = db.db.user.find_one_and_delete({"_id": int(_id)})
+        cursor = db.db.attendance.find_one_and_delete({"_id": int(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}
