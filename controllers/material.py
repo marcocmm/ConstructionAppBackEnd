@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from controllers.login import tokenReq
+from bson.json_util import dumps
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -11,11 +13,13 @@ HTTP_BAD_REQUEST           = 400
 bp_material = Blueprint('material', __name__, url_prefix='/material')
 
 @bp_material.route("/all", methods=['GET'])
+@tokenReq
 def getAllMaterials():
     cursor = db.db.material.find({})
     return dumps(list(cursor))
 
 @bp_material.route('/<_id>', methods=['GET'])
+@tokenReq
 def getMaterial(_id):
     try:
         material = list(db.db.material.find({"_id": int(_id)}))
@@ -25,7 +29,8 @@ def getMaterial(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_material.route('/material', methods=['POST']) 
+@bp_material.route('/material', methods=['POST'])
+@tokenReq 
 def insertMaterial():
     try:
         request_data = request.get_json() 
@@ -64,6 +69,7 @@ def updateMaterial():
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_material.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deleteMaterial(_id):
     try:
         cursor = db.db.material.find_one_and_delete({"_id": int(_id)})
@@ -71,3 +77,6 @@ def deleteMaterial(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)

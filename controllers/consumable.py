@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from controllers.login import tokenReq
+from bson.json_util import dumps
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -11,11 +13,13 @@ HTTP_BAD_REQUEST           = 400
 bp_consumable = Blueprint('consumable', __name__, url_prefix='/consumable')
 
 @bp_consumable.route("/all", methods=['GET'])
+@tokenReq
 def getAllConsumable():
     cursor = db.db.consumable.find({})
     return dumps(list(cursor))
 
 @bp_consumable.route('/<_id>', methods=['GET'])
+@tokenReq
 def getConsumable(_id):
     try:
         consumable = list(db.db.consumable.find({"_id": int(_id)}))
@@ -25,7 +29,8 @@ def getConsumable(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_consumable.route('/consumable', methods=['POST']) 
+@bp_consumable.route('/consumable', methods=['POST'])
+@tokenReq 
 def insertConsumable():
     try:
         request_data = request.get_json() 
@@ -44,6 +49,7 @@ def insertConsumable():
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_consumable.route('/<_id>', methods=['PUT'])
+@tokenReq
 def updateConsumable():
     try:
         request_data = request.get_json() 
@@ -64,6 +70,7 @@ def updateConsumable():
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_consumable.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deleteConsumable(_id):
     try:
         cursor = db.db.consumable.find_one_and_delete({"_id": int(_id)})
@@ -71,3 +78,6 @@ def deleteConsumable(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)

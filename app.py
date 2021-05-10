@@ -1,8 +1,11 @@
 from flask import Flask, jsonify, request, make_response
 from pymongo import MongoClient
 from bson.json_util import dumps
+
 import db
 app = Flask(__name__)
+
+app.config.from_object('env')
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
 HTTP_SUCCESS_CREATED       = 201
@@ -33,6 +36,9 @@ def send(data, status_code):
     return make_response(dumps(data), status_code)
 
 if __name__ == '__main__':
+    from controllers.login import bp_login
+    app.register_blueprint(bp_login)
+
     from controllers.attendance import bp_attendance
     app.register_blueprint(bp_attendance)
 
@@ -66,4 +72,4 @@ if __name__ == '__main__':
     from controllers.user_type import bp_user_type
     app.register_blueprint(bp_user_type)
     
-    app.run(port=8000)
+    app.run(host=app.config['HOST'], port=int(app.config['PORT']), debug=app.config['DEBUG'])

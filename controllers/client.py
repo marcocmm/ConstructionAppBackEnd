@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from controllers.login import tokenReq
+from bson.json_util import dumps
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -11,11 +13,13 @@ HTTP_BAD_REQUEST           = 400
 bp_client = Blueprint('client', __name__, url_prefix='/client')
 
 @bp_client.route("/all", methods=['GET'])
+@tokenReq
 def getAllClients():
     cursor = db.db.client.find({})
     return dumps(list(cursor))
 
 @bp_client.route('/<_id>', methods=['GET'])
+@tokenReq
 def getClient(_id):
     try:
         client = list(db.db.client.find({"_id": int(_id)}))
@@ -25,7 +29,8 @@ def getClient(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_client.route('/client', methods=['POST']) 
+@bp_client.route('/client', methods=['POST'])
+@tokenReq 
 def insertClient():
     try:
         request_data = request.get_json() 
@@ -43,6 +48,7 @@ def insertClient():
 
 
 @bp_client.route('/<_id>', methods=['PUT'])
+@tokenReq
 def updateClient():
     try:
         request_data = request.get_json() 
@@ -61,6 +67,7 @@ def updateClient():
 
 
 @bp_client.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deleteClient(_id):
     try:
         cursor = db.db.client.find_one_and_delete({"_id": int(_id)})
@@ -68,3 +75,6 @@ def deleteClient(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)

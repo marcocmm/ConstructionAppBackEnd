@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from controllers.login import tokenReq
+from bson.json_util import dumps
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -10,7 +12,8 @@ HTTP_BAD_REQUEST           = 400
 
 bp_equipment = Blueprint('equipment', __name__, url_prefix='/equipment')
 
-@bp_equipment.route('/equipment', methods=['POST']) 
+@bp_equipment.route('/equipment', methods=['POST'])
+@tokenReq 
 def insertEquipment():
     try:
         request_data = request.get_json() 
@@ -29,11 +32,13 @@ def insertEquipment():
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_equipment.route("/all", methods=['GET'])
+@tokenReq
 def getAllEquipments():
     cursor = db.db.equipment.find({})
     return dumps(list(cursor))
 
 @bp_equipment.route('/<_id>', methods=['PUT'])
+@tokenReq
 def updateEquipment():
     try:
         request_data = request.get_json() 
@@ -55,6 +60,7 @@ def updateEquipment():
 
 
 @bp_equipment.route('/<_id>', methods=['GET'])
+@tokenReq
 def getEquipment(_id):
     try:
         equipment = list(db.db.equipment.find({"_id": int(_id)}))
@@ -64,6 +70,7 @@ def getEquipment(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_equipment.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deleteEquipment(_id):
     try:
         cursor = db.db.equipment.find_one_and_delete({"_id": int(_id)})
@@ -71,3 +78,6 @@ def deleteEquipment(_id):
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)

@@ -1,4 +1,6 @@
-from flask import Blueprint, current_app, session, request
+from flask import Blueprint, current_app, session, request, make_response
+from controllers.login import tokenReq
+from bson.json_util import dumps
 import db
 
 HTTP_SUCCESS_GET_OR_UPDATE = 200
@@ -11,6 +13,7 @@ HTTP_BAD_REQUEST           = 400
 bp_permission = Blueprint('permission', __name__, url_prefix='/permission')
 
 @bp_permission.route('/permission', methods=['POST'])
+@tokenReq
 def insertPermission():
     try:
         request_data = request.get_json() 
@@ -37,6 +40,7 @@ def insertPermission():
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_permission.route('/<_id>', methods=['GET'])
+@tokenReq
 def getPermission(_id):
     try:
         permission = list(db.db.permission.find({"_id": int(_id)}))
@@ -46,6 +50,7 @@ def getPermission(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_permission.route('/<_id>', methods=['DELETE'])
+@tokenReq
 def deletePermission(_id):
     try:
         cursor = db.db.permission.find_one_and_delete({"_id": int(_id)})
@@ -55,11 +60,13 @@ def deletePermission(_id):
         return send(output, HTTP_BAD_REQUEST)
 
 @bp_permission.route("/all", methods=['GET'])
+@tokenReq
 def getAllUPermissions():
     cursor = db.db.permission.find({})
     return dumps(list(cursor))
 
 @bp_permission.route('/<_id>', methods=['PUT'])
+@tokenReq
 def updatePermission():
     try:
         request_data = request.get_json() 
@@ -86,3 +93,7 @@ def updatePermission():
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
+
+
+def send(data, status_code):
+    return make_response(dumps(data), status_code)
