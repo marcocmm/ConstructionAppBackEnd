@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, session, request, make_response
 from controllers.login import tokenReq
+from bson.objectid import ObjectId
 from bson.json_util import dumps
 import db
 
@@ -18,11 +19,13 @@ def getAllConsumable():
     cursor = db.db.consumable.find({})
     return dumps(list(cursor))
 
-@bp_consumable.route('/<_id>', methods=['GET'])
+@bp_consumable.route('', methods=['GET'])
 @tokenReq
-def getConsumable(_id):
+def getConsumable():
     try:
-        consumable = list(db.db.consumable.find({"_id": int(_id)}))
+
+        _id = request.args.get('consumable_id')
+        consumable = list(db.db.consumable.find({"_id": ObjectId(_id)}))
         return send({"result": consumable}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -48,7 +51,7 @@ def insertConsumable():
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-@bp_consumable.route('/<_id>', methods=['PUT'])
+@bp_consumable.route('', methods=['PUT'])
 @tokenReq
 def updateConsumable():
     try:
@@ -61,7 +64,7 @@ def updateConsumable():
         'dataCompra': request_data['dataCompra'],
         'notaFiscalURL': request_data['notaFiscalURL'],
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.consumable.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -69,11 +72,12 @@ def updateConsumable():
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-@bp_consumable.route('/<_id>', methods=['DELETE'])
+@bp_consumable.route('', methods=['DELETE'])
 @tokenReq
-def deleteConsumable(_id):
+def deleteConsumable():
     try:
-        cursor = db.db.consumable.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('consumable_id')
+        cursor = db.db.consumable.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}
