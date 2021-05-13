@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, session, request, make_response
 from bson.json_util import dumps
+from bson.objectid import ObjectId
 from controllers.login import tokenReq
 import db
 
@@ -18,11 +19,12 @@ def getAllAttendance():
     cursor = db.db.attendance.find({})
     return dumps(list(cursor))
 
-@bp_attendance.route('/<_id>', methods=['GET'])
+@bp_attendance.route('', methods=['GET'])
 @tokenReq
-def getAttendance(_id):
+def getAttendance():
     try:
-        attendance = list(db.db.attendance.find({"_id": int(_id)}))
+        _id = request.args.get('attendance_id')
+        attendance = list(db.db.attendance.find({"_id": ObjectId(_id)}))
         return send({"result": attendance}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -48,7 +50,7 @@ def insertAttendance():
 
 
 
-@bp_attendance.route('/<_id>', methods=['PUT'])
+@bp_attendance.route('', methods=['PUT'])
 @tokenReq
 def updateAttendance():
     try:
@@ -59,7 +61,7 @@ def updateAttendance():
         'dataEntrada': request_data['dataEntrada'],
         'dataSaida': request_data['dataSaida']
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.attendance.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -68,11 +70,12 @@ def updateAttendance():
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_attendance.route('/<_id>', methods=['DELETE'])
+@bp_attendance.route('', methods=['DELETE'])
 @tokenReq
-def deleteAttendance(_id):
+def deleteAttendance():
     try:
-        cursor = db.db.attendance.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('attendance_id')
+        cursor = db.db.attendance.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

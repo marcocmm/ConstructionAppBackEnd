@@ -1,4 +1,7 @@
+from dns.message import QUESTION
+from dns.resolver import reset_default_resolver
 from flask import Blueprint, current_app, session, request, make_response
+from bson.objectid import ObjectId
 from controllers.login import tokenReq
 from bson.json_util import dumps
 import db
@@ -19,11 +22,12 @@ def getAllServices():
     cursor = db.db.service.find({})
     return dumps(list(cursor))
 
-@bp_service.route('/<_id>', methods=['GET'])
+@bp_service.route('', methods=['GET'])
 @tokenReq
-def getService(_id):
+def getService():
     try:
-        service = list(db.db.service.find({"_id": int(_id)}))
+        _id = request.args.get('service_id')
+        service = list(db.db.service.find({"_id": ObjectId(_id)}))
         return send({"result": service}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -51,7 +55,7 @@ def insertService():
 
 
 
-@bp_service.route('/<_id>', methods=['PUT'])
+@bp_service.route('', methods=['PUT'])
 @tokenReq
 def updateService():
     try:
@@ -64,7 +68,7 @@ def updateService():
         'dataCompra': request_data['dataCompra'],
         'notaFiscalURL': request_data['notaFiscalURL'],
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.service.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -73,11 +77,12 @@ def updateService():
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_service.route('/<_id>', methods=['DELETE'])
+@bp_service.route('', methods=['DELETE'])
 @tokenReq
-def deleteService(_id):
+def deleteService():
     try:
-        cursor = db.db.service.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('service_id')
+        cursor = db.db.service.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

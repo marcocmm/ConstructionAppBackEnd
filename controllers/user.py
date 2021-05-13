@@ -1,4 +1,5 @@
 from flask import Blueprint, current_app, session, request, make_response
+from bson.objectid import ObjectId
 from bson.json_util import dumps
 from controllers.login import tokenReq
 import db
@@ -20,11 +21,12 @@ def getAllUsers():
     cursor = db.db.user.find({})
     return dumps(list(cursor))
 
-@bp_user.route('/<_id>', methods=['GET'])
+@bp_user.route('', methods=['GET'])
 @tokenReq
-def getUser(_id):
+def getUser():
     try:
-        lista_users = list(db.db.user.find({"_id": int(_id)}))
+        _id = request.args.get('user_id')
+        lista_users = list(db.db.user.find({"_id": ObjectId(_id)}))
         return send({"result": lista_users}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -51,7 +53,7 @@ def insertUser():
 
 
 
-@bp_user.route('/<_id>', methods=['PUT'])
+@bp_user.route('', methods=['PUT'])
 @tokenReq
 def updateUser():
     try:
@@ -63,7 +65,7 @@ def updateUser():
         'tipo_usuario_id': request_data['tipo_usuario_id'],
         'nif': request_data['nif'],
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.user.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -72,11 +74,12 @@ def updateUser():
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_user.route('/<_id>', methods=['DELETE'])
+@bp_user.route('', methods=['DELETE'])
 @tokenReq
-def deleteUser(_id):
+def deleteUser():
     try:
-        cursor = db.db.user.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('user_id')
+        cursor = db.db.user.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

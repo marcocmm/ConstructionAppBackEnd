@@ -1,4 +1,5 @@
 from flask import Blueprint, current_app, session, request, make_response
+from bson.objectid import ObjectId
 from controllers.login import tokenReq
 from bson.json_util import dumps
 import db
@@ -39,21 +40,23 @@ def insertPermission():
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-@bp_permission.route('/<_id>', methods=['GET'])
+@bp_permission.route('', methods=['GET'])
 @tokenReq
-def getPermission(_id):
+def getPermission():
     try:
-        permission = list(db.db.permission.find({"_id": int(_id)}))
+        _id = request.args.get('permission_id')
+        permission = list(db.db.permission.find({"_id": ObjectId(_id)}))
         return send({"result": permission}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-@bp_permission.route('/<_id>', methods=['DELETE'])
+@bp_permission.route('', methods=['DELETE'])
 @tokenReq
-def deletePermission(_id):
+def deletePermission():
     try:
-        cursor = db.db.permission.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('permission_id')
+        cursor = db.db.permission.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}
@@ -65,7 +68,7 @@ def getAllUPermissions():
     cursor = db.db.permission.find({})
     return dumps(list(cursor))
 
-@bp_permission.route('/<_id>', methods=['PUT'])
+@bp_permission.route('', methods=['PUT'])
 @tokenReq
 def updatePermission():
     try:
@@ -86,7 +89,7 @@ def updatePermission():
         'gastosConsumiveis': request_data['gastosConsumiveis'],
         'recursosHumanos': request_data['recursosHumanos'],
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.permission.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
