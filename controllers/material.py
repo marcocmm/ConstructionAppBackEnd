@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, session, request, make_response
 from controllers.login import tokenReq
+from bson.objectid import ObjectId
 from bson.json_util import dumps
 import db
 
@@ -18,11 +19,12 @@ def getAllMaterials():
     cursor = db.db.material.find({})
     return dumps(list(cursor))
 
-@bp_material.route('/<_id>', methods=['GET'])
+@bp_material.route('', methods=['GET'])
 @tokenReq
-def getMaterial(_id):
+def getMaterial():
     try:
-        material = list(db.db.material.find({"_id": int(_id)}))
+        _id = request.args.get('material_id')
+        material = list(db.db.material.find({"_id": ObjectId(_id)}))
         return send({"result": material}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -48,7 +50,7 @@ def insertMaterial():
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-@bp_material.route('/<_id>', methods=['PUT'])
+@bp_material.route('', methods=['PUT'])
 def updateMaterial():
     try:
         request_data = request.get_json() 
@@ -60,7 +62,7 @@ def updateMaterial():
         'dataCompra': request_data['dataCompra'],
         'notaFiscalURL': request_data['notaFiscalURL'],
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.material.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -68,11 +70,12 @@ def updateMaterial():
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
-@bp_material.route('/<_id>', methods=['DELETE'])
+@bp_material.route('', methods=['DELETE'])
 @tokenReq
-def deleteMaterial(_id):
+def deleteMaterial():
     try:
-        cursor = db.db.material.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('material_id')
+        cursor = db.db.material.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

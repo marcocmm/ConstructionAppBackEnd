@@ -1,4 +1,5 @@
 from flask import Blueprint, current_app, session, request, make_response
+from bson.objectid import ObjectId
 from controllers.login import tokenReq
 from bson.json_util import dumps
 import db
@@ -18,11 +19,12 @@ def getAllProviders():
     cursor = db.db.provider.find({})
     return dumps(list(cursor))
 
-@bp_provider.route('/<_id>', methods=['GET'])
+@bp_provider.route('', methods=['GET'])
 @tokenReq
-def getProvider(_id):
+def getProvider():
     try:
-        provider = list(db.db.provider.find({"_id": int(_id)}))
+        _id = request.args.get('provider_id')
+        provider = list(db.db.provider.find({"_id": ObjectId(_id)}))
         return send({"result": provider}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -49,7 +51,7 @@ def insertProvider():
 
 
 
-@bp_provider.route('/<_id>', methods=['PUT'])
+@bp_provider.route('', methods=['PUT'])
 @tokenReq
 def updateProvider():
     try:
@@ -61,7 +63,7 @@ def updateProvider():
         'nipc': request_data['nipc'],
         'contratoURL': request_data['contratoURL'],
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.provider.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -70,11 +72,12 @@ def updateProvider():
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_provider.route('/<_id>', methods=['DELETE'])
+@bp_provider.route('', methods=['DELETE'])
 @tokenReq
-def deleteProvider(_id):
+def deleteProvider():
     try:
-        cursor = db.db.provider.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('provider_id')
+        cursor = db.db.provider.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

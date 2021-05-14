@@ -1,4 +1,5 @@
 from flask import Blueprint, current_app, session, request, make_response
+from bson.objectid import ObjectId
 from controllers.login import tokenReq
 from bson.json_util import dumps
 import db
@@ -18,11 +19,12 @@ def getAllClients():
     cursor = db.db.client.find({})
     return dumps(list(cursor))
 
-@bp_client.route('/<_id>', methods=['GET'])
+@bp_client.route('', methods=['GET'])
 @tokenReq
-def getClient(_id):
+def getClient():
     try:
-        client = list(db.db.client.find({"_id": int(_id)}))
+        _id = request.args.get('client_id')
+        client = list(db.db.client.find({"_id": ObjectId(_id)}))
         return send({"result": client}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -47,7 +49,7 @@ def insertClient():
 
 
 
-@bp_client.route('/<_id>', methods=['PUT'])
+@bp_client.route('', methods=['PUT'])
 @tokenReq
 def updateClient():
     try:
@@ -57,7 +59,7 @@ def updateClient():
         'telefone': request_data['telefone'],
         'nipcnif': request_data['nipcnif'],
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.client.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -66,11 +68,12 @@ def updateClient():
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_client.route('/<_id>', methods=['DELETE'])
+@bp_client.route('', methods=['DELETE'])
 @tokenReq
-def deleteClient(_id):
+def deleteClient():
     try:
-        cursor = db.db.client.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('client_id')
+        cursor = db.db.client.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

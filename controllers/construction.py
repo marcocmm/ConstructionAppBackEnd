@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, session, request, make_response
 from controllers.login import tokenReq
+from bson.objectid import ObjectId
 from bson.json_util import dumps
 import db
 
@@ -18,11 +19,12 @@ def getAllConstruction():
     cursor = db.db.construction.find({})
     return dumps(list(cursor))
 
-@bp_construction.route('/<_id>', methods=['GET'])
+@bp_construction.route('', methods=['GET'])
 @tokenReq
-def getConstruction(_id):
+def getConstruction():
     try:
-        construction = list(db.db.construction.find({"_id": int(_id)}))
+        _id = request.args.get('construction_id')
+        construction = list(db.db.construction.find({"_id": ObjectId(_id)}))
         return send({"result": construction}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
         output = {"error": str(e)}
@@ -53,7 +55,7 @@ def insertConstruction():
 
 
 
-@bp_construction.route('/<_id>', methods=['PUT'])
+@bp_construction.route('', methods=['PUT'])
 @tokenReq
 def updateConstruction():
     try:
@@ -68,7 +70,7 @@ def updateConstruction():
         'materiais_id': request_data['materiais_id'],
         'servicos_id': request_data['servicos_id']
         }
-        query = { "_id": int(request_data['_id']) }
+        query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
         db.db.construction.update_one(query, newvalues)
         return send({"result": update_store}, HTTP_SUCCESS_GET_OR_UPDATE)
@@ -77,11 +79,12 @@ def updateConstruction():
         return send(output, HTTP_BAD_REQUEST)
 
 
-@bp_construction.route('/<_id>', methods=['DELETE'])
+@bp_construction.route('', methods=['DELETE'])
 @tokenReq
-def deleteConstruction(_id):
+def deleteConstruction():
     try:
-        cursor = db.db.construction.find_one_and_delete({"_id": int(_id)})
+        _id = request.args.get('construction_id')
+        cursor = db.db.construction.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:
         output = {"error": str(e)}

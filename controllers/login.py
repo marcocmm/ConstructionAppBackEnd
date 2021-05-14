@@ -1,7 +1,6 @@
-from flask import Blueprint, current_app, session, request, make_response, jsonify
+from flask import Blueprint, request, make_response, jsonify
 from bson.json_util import dumps
-from  werkzeug.security import generate_password_hash, check_password_hash
-import uuid
+from  werkzeug.security import check_password_hash
 import jwt
 from datetime import datetime, timedelta
 from functools import wraps
