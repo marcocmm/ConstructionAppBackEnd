@@ -37,6 +37,7 @@ def insertConstruction():
         new_store = {
         'nome': request_data['nome'],
         'imageURL': request_data['imageURL'],
+        'dataInicio': request_data['dataInicio'],
         'colaboradores_id': request_data['colaboradores_id'],
         'consumiveis_id': request_data['consumiveis_id'],
         'equipamentos_id': request_data['equipamentos_id'],
