@@ -18,7 +18,7 @@ bp_user = Blueprint('user', __name__, url_prefix='/user')
 @bp_user.route("/all", methods=['GET'])
 @tokenReq
 def getAllUsers():
-    cursor = db.db.user.find({})
+    cursor = db.db.user.find({}, {'senha': False})
     return dumps(list(cursor))
 
 @bp_user.route('', methods=['GET'])
@@ -34,10 +34,10 @@ def getUser():
 
 
 @bp_user.route('/user', methods=['POST'])
-@tokenReq 
 def insertUser():
+    request_data = request.get_json() 
+    print(request_data)
     try:
-        request_data = request.get_json() 
         new_store = {
         'nome': request_data['nome'],
         'senha': generate_password_hash(request_data['senha']),
@@ -48,6 +48,7 @@ def insertUser():
         db.db.user.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
     except Exception as e:
+        print(e)
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
 
