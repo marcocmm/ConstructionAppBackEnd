@@ -42,8 +42,8 @@ if __name__ == '__main__':
     from controllers.attendance import bp_attendance
     app.register_blueprint(bp_attendance)
 
-    from controllers.client import bp_client
-    app.register_blueprint(bp_client)
+    from controllers.customer import bp_customer
+    app.register_blueprint(bp_customer)
 
     from controllers.construction import bp_construction
     app.register_blueprint(bp_construction)
