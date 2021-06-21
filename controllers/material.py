@@ -19,6 +19,13 @@ def getAllMaterials():
     cursor = db.db.material.find({})
     return dumps(list(cursor))
 
+@bp_material.route("/allbyconstruction", methods=['GET'])
+@tokenReq
+def getAllMaterialsByConstruction():
+    _id = request.args.get('obra_id')
+    material = list(db.db.material.find({"obra_id": ObjectId(_id)}))
+    return send({"result": material}, HTTP_SUCCESS_GET_OR_UPDATE)
+
 @bp_material.route('', methods=['GET'])
 @tokenReq
 def getMaterial():
@@ -43,6 +50,7 @@ def insertMaterial():
         'fornecedor_id': request_data['fornecedor_id'],
         'dataCompra': request_data['dataCompra'],
         'notaFiscalURL': request_data['notaFiscalURL'],
+        'obra_id': ObjectId(request_data['obra_id']),
         }
         db.db.material.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)

@@ -22,6 +22,13 @@ def getAllServices():
     cursor = db.db.service.find({})
     return dumps(list(cursor))
 
+@bp_service.route("/allbyconstruction", methods=['GET'])
+@tokenReq
+def getAllServicesByConstruction():
+    _id = request.args.get('obra_id')
+    service = list(db.db.service.find({"obra_id": ObjectId(_id)}))
+    return send({"result": service}, HTTP_SUCCESS_GET_OR_UPDATE)
+
 @bp_service.route('', methods=['GET'])
 @tokenReq
 def getService():
@@ -32,7 +39,6 @@ def getService():
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
-
 
 @bp_service.route('/service', methods=['POST'])
 @tokenReq
@@ -46,6 +52,7 @@ def insertService():
         'fornecedor_id': request_data['fornecedor_id'],
         'dataCompra': request_data['dataCompra'],
         'notaFiscalURL': request_data['notaFiscalURL'],
+        'obra_id': ObjectId(request_data['obra_id']),
         }
         db.db.service.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)

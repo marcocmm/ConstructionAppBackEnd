@@ -19,6 +19,13 @@ def getAllConsumable():
     cursor = db.db.consumable.find({})
     return dumps(list(cursor))
 
+@bp_consumable.route("/allbyconstruction", methods=['GET'])
+@tokenReq
+def getAllConsumableByConstruction():
+    _id = request.args.get('obra_id')
+    consumable = list(db.db.consumable.find({"obra_id": ObjectId(_id)}))
+    return send({"result": consumable}, HTTP_SUCCESS_GET_OR_UPDATE)
+
 @bp_consumable.route('', methods=['GET'])
 @tokenReq
 def getConsumable():
@@ -44,6 +51,7 @@ def insertConsumable():
         'fornecedor_id': request_data['fornecedor_id'],
         'dataCompra': request_data['dataCompra'],
         'notaFiscalURL': request_data['notaFiscalURL'],
+        'obra_id': ObjectId(request_data['obra_id']),
         }
         db.db.consumable.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)

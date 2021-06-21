@@ -19,6 +19,13 @@ def getAllcustomers():
     cursor = db.db.customer.find({})
     return dumps(list(cursor))
 
+@bp_customer.route("/allbyconstruction", methods=['GET'])
+@tokenReq
+def getAllCustomersByConstruction():
+    _id = request.args.get('obra_id')
+    customer = list(db.db.customer.find({"obra_id": ObjectId(_id)}))
+    return send({"result": customer}, HTTP_SUCCESS_GET_OR_UPDATE)
+
 @bp_customer.route('', methods=['GET'])
 @tokenReq
 def getcustomer():
@@ -40,7 +47,8 @@ def insertcustomer():
         'nome': request_data['nome'],
         'telefone': request_data['telefone'],
         'nipcnif': request_data['nipcnif'],
-        }
+        'obra_id': ObjectId(request_data['obra_id']),
+        } 
         db.db.customer.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
     except Exception as e:

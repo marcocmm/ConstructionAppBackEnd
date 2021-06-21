@@ -19,6 +19,13 @@ def getAllProviders():
     cursor = db.db.provider.find({})
     return dumps(list(cursor))
 
+@bp_provider.route("/allbyconstruction", methods=['GET'])
+@tokenReq
+def getAllProvidersByConstruction():
+    _id = request.args.get('obra_id')
+    provider = list(db.db.provider.find({"obra_id": ObjectId(_id)}))
+    return send({"result": provider}, HTTP_SUCCESS_GET_OR_UPDATE)
+
 @bp_provider.route('', methods=['GET'])
 @tokenReq
 def getProvider():
@@ -29,7 +36,6 @@ def getProvider():
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
-
 
 @bp_provider.route('/provider', methods=['POST'])
 @tokenReq
@@ -42,14 +48,13 @@ def insertProvider():
         'endereco': request_data['endereco'],
         'nipc': request_data['nipc'],
         'contratoURL': request_data['contratoURL'],
+        'obra_id': ObjectId(request_data['obra_id']),
         }
         db.db.provider.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
     except Exception as e:
         output = {"error": str(e)}
         return send(output, HTTP_BAD_REQUEST)
-
-
 
 @bp_provider.route('', methods=['PUT'])
 @tokenReq

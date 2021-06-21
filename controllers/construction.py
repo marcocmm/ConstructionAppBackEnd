@@ -23,7 +23,7 @@ def getAllConstruction():
 @tokenReq
 def getConstruction():
     try:
-        _id = request.args.get('construction_id')
+        _id = request.args.get('obra_id')
         construction = list(db.db.construction.find({"_id": ObjectId(_id)}))
         return send({"result": construction}, HTTP_SUCCESS_GET_OR_UPDATE)
     except Exception as e:
@@ -39,13 +39,7 @@ def insertConstruction():
         new_store = {
         'nome': request_data['nome'],
         'imageURL': request_data['imageURL'],
-        'dataInicio': request_data['dataInicio'],
-        # 'colaboradores_id': request_data['colaboradores_id'],
-        # 'consumiveis_id': request_data['consumiveis_id'],
-        # 'equipamentos_id': request_data['equipamentos_id'],
-        # 'customer_id': request_data['customer_id'],
-        # 'materiais_id': request_data['materiais_id'],
-        # 'servicos_id': request_data['servicos_id']
+        'dataInicio': request_data['dataInicio']
         }
         db.db.construction.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
@@ -63,12 +57,7 @@ def updateConstruction():
         update_store = {
         'nome': request_data['nome'],
         'imageURL': request_data['imageURL'],
-        'colaboradores_id': request_data['colaboradores_id'],
-        'consumiveis_id': request_data['consumiveis_id'],
-        'equipamentos_id': request_data['equipamentos_id'],
-        'customer_id': request_data['customer_id'],
-        'materiais_id': request_data['materiais_id'],
-        'servicos_id': request_data['servicos_id']
+        'dataInicio': request_data['dataInicio']
         }
         query = { "_id": ObjectId(request_data['_id']) }
         newvalues = { "$set": update_store }
@@ -83,7 +72,7 @@ def updateConstruction():
 @tokenReq
 def deleteConstruction():
     try:
-        _id = request.args.get('construction_id')
+        _id = request.args.get('obra_id')
         cursor = db.db.construction.find_one_and_delete({"_id": ObjectId(_id)})
         return send({"result": _id}, HTTP_SUCCESS_DELETED)
     except Exception as e:

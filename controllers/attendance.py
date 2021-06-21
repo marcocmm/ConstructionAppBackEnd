@@ -19,6 +19,14 @@ def getAllAttendance():
     cursor = db.db.attendance.find({})
     return dumps(list(cursor))
 
+@bp_attendance.route("/allbyconstruction", methods=['GET'])
+@tokenReq
+def getAllAttendanceByConstruction():
+    _id = request.args.get('obra_id')
+    attendance = list(db.db.attendance.find({"obra_id": ObjectId(_id)}))
+    return send({"result": attendance}, HTTP_SUCCESS_GET_OR_UPDATE)
+
+
 @bp_attendance.route('', methods=['GET'])
 @tokenReq
 def getAttendance():
@@ -38,9 +46,9 @@ def insertAttendance():
         request_data = request.get_json() 
         new_store = {
         'usuario_id': request_data['usuario_id'],
-        'obra_id': request_data['obra_id'],
         'dataEntrada': request_data['dataEntrada'],
-        'dataSaida': request_data['dataSaida']
+        'dataSaida': request_data['dataSaida'],
+        'obra_id': ObjectId(request_data['obra_id']),
         }
         db.db.attendance.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)

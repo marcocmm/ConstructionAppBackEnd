@@ -24,7 +24,8 @@ def insertEquipment():
         'fornecedor_id': request_data['fornecedor_id'],
         'dataCompra': request_data['dataCompra'],
         'valor': request_data['valor'],
-        'notaFiscalURL': request_data['notaFiscalURL']
+        'notaFiscalURL': request_data['notaFiscalURL'],
+        'obra_id': ObjectId(request_data['obra_id']),
         }
         db.db.equipment.insert(new_store)
         return send({"result": new_store}, HTTP_SUCCESS_CREATED)
@@ -37,6 +38,13 @@ def insertEquipment():
 def getAllEquipments():
     cursor = db.db.equipment.find({})
     return dumps(list(cursor))
+
+@bp_equipment.route("/allbyconstruction", methods=['GET'])
+@tokenReq
+def getAllEquipmentsByConstruction():
+    _id = request.args.get('obra_id')
+    equipment = list(db.db.equipment.find({"obra_id": ObjectId(_id)}))
+    return send({"result": equipment}, HTTP_SUCCESS_GET_OR_UPDATE)
 
 @bp_equipment.route('', methods=['PUT'])
 @tokenReq
